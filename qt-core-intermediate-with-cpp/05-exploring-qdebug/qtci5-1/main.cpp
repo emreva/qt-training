@@ -3,15 +3,61 @@
 #include <QFile>
 #include <QDateTime>
 
+const QtMessageHandler QT_DEFAULT_MESSAGE_HANDLER = qInstallMessageHandler(nullptr);
+
+void lhandler(QtMsgType type,const QMessageLogContext &context,const QString &msg){
+
+
+    QString txt;
+
+    switch (type) {
+    case QtInfoMsg:
+        txt=QString("Info: %1 in %2").arg(msg);
+        break;
+    case QtDebugMsg:
+        txt=QString("Debug: %1 in %2").arg(msg);
+        break;
+    case QtWarningMsg:
+        txt=QString("Warning: %1 in %2").arg(msg);
+        break;
+    case QtCriticalMsg:
+        txt=QString("Critical: %1 in %2").arg(msg);
+        break;
+    case QtFatalMsg:
+        txt=QString("Fatal: %1 in %2").arg(msg);
+        break;
+
+
+    }
+
+    QFile file("log.txt");
+    if(file.open(QIODevice::WriteOnly | QIODevice::Append)){
+
+
+        QTextStream ts(&file);
+        ts<< QDateTime::currentDateTime().toString()<<" - "<<txt<<" file: "<<"line: "<<context.line<<"\r\n";
+        ts.flush();
+        file.close();
+
+    }
+
+
+
+    (*QT_DEFAULT_MESSAGE_HANDLER)(type,context,msg);
+
+}
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    qInstallMessageHandler(lhandler);
+
     qInfo() <<"This is info message";
     qDebug() <<"This is debug message";
     qWarning() <<"This is warning message";
     qCritical() <<"This is critical message";
+    qCritical() <<"Kritik Hata var..";
     qFatal("This is fatal message");
 
 
